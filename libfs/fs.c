@@ -283,10 +283,6 @@
 	
 	}
 
-	/*
-	Function needed for read an write
-	the function returns the data block that we are supposed to read from
-	*/
 
 
 	int fs_write(int fd, void *buf, size_t count)
@@ -303,18 +299,32 @@
 	int fs_read(int fd, void *buf, size_t count)
 	{
 		/* TODO: Phase 4 */
-		//uint8_t read = 0;
-		if(mount ==0 || fd >FS_OPEN_MAX_COUNT || fd < 0 || buf == NULL)
+	
+		if(mount ==0 || fd >FS_OPEN_MAX_COUNT || fd < 0)
 			return -1;
 		if(fileD[fd].Filename[0] == '\0')
 			return -1;
-		//uint16_t position = helper(fd, fileD[fd].os);
-		for(int i =0; i < FS_FILE_MAX_COUNT; i++){
-			if(strcmp((char*)fileD[fd].Filename,(char*)rd[i].Filename)== 0){
-				return 0;
+		int read = 0;
+		void *temp_buffer = (void*)malloc(BLOCK_SIZE);
+		
+		int starting_block = fileD[fd].os / BLOCK_SIZE;  
+		int os =  fileD[fd].os % BLOCK_SIZE;
+		block_read(starting_block+sb.Data_Block+1, temp_buffer);
+		for(int i =0; i < count; i++){
+			if(i == fs_stat(fd))
+				return read;
+			if(BLOCK_SIZE <= os){
+				starting_block ++;
+				block_read(starting_block+sb.Data_Block+1, temp_buffer);
+				os =0;
 			}
+			memcpy(buf + i, temp_buffer+os, 1);
+			read++;
+			os++;
+			fileD[fd].os++;
+			
 		}
-		return -1;
+		return read;
 
 	}
 
