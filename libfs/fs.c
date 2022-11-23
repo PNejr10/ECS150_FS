@@ -288,12 +288,38 @@
 	int fs_write(int fd, void *buf, size_t count)
 	{
 		/* TODO: Phase 4 */
-		if(fd)
+		
+		if(mount ==0 || fd >FS_OPEN_MAX_COUNT || fd < 0)
 			return -1;
-		if(count > 0)
+		if(fileD[fd].Filename[0] == '\0')
 			return -1;
-		printf("%p\n", buf);
-		return 0;
+
+		//int f_index =0;
+		int f=0;
+		for(int i =0; i< FS_FILE_MAX_COUNT; i++){
+			if(strcmp((char*)rd[i].Filename, (char*)fileD[fd].Filename)==0){
+				//f_index= rd[i].index;
+				f =i;
+				break;
+			}
+		}
+		//f_index = f+f;
+		fs_info();
+		fs_ls();
+		int write = 0;
+		void *temp_buffer = (void*)malloc(BLOCK_SIZE);
+		//int starting_block = fileD[fd].os / BLOCK_SIZE;  
+		int os =  fileD[fd].os % BLOCK_SIZE;
+		block_read(4, temp_buffer);
+		for(int i =0; i < count; i++){
+			memcpy(temp_buffer+os, buf+i, 1);
+			os++;
+			write++;
+		}
+		block_write(4, temp_buffer);
+		rd[f].file_Size = rd[f].file_Size+write;
+		return write;
+
 	}
 
 	int fs_read(int fd, void *buf, size_t count)
@@ -304,24 +330,31 @@
 			return -1;
 		if(fileD[fd].Filename[0] == '\0')
 			return -1;
+
+		int f_index =0;
+		for(int i =0; i< FS_FILE_MAX_COUNT; i++){
+			if(strcmp((char*)rd[i].Filename, (char*)fileD[fd].Filename)==0){
+				f_index= rd[i].index;
+				break;
+			}
+		}
+
 		int read = 0;
 		void *temp_buffer = (void*)malloc(BLOCK_SIZE);
-		
 		int starting_block = fileD[fd].os / BLOCK_SIZE;  
 		int os =  fileD[fd].os % BLOCK_SIZE;
-		block_read(starting_block+sb.Data_Block+1, temp_buffer);
+		block_read(f_index + sb.Data_Block + starting_block, temp_buffer);
 		for(int i =0; i < count; i++){
 			if(i == fs_stat(fd))
 				return read;
 			if(BLOCK_SIZE <= os){
-				starting_block ++;
-				block_read(starting_block+sb.Data_Block+1, temp_buffer);
+				f_index ++;
+				block_read(f_index + sb.Data_Block + starting_block, temp_buffer);
 				os =0;
 			}
 			memcpy(buf + i, temp_buffer+os, 1);
 			read++;
 			os++;
-			fileD[fd].os++;
 			
 		}
 		return read;
