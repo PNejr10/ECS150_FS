@@ -325,10 +325,12 @@ int fs_write(int fd, void *buf, size_t count)
 
 		int write = 0;
 		void *temp_buffer = (void*)malloc(BLOCK_SIZE);
-		int starting_block = fileD[fd].os / BLOCK_SIZE;  
+		//int starting_block = fileD[fd].os / BLOCK_SIZE;  
+		// starting block would be used if we are not writing from the start of the block
+		// have to figure this out later 
 		int os =  fileD[fd].os % BLOCK_SIZE;
 		if(f_index != 0xFFFF)
-			block_read(f_index + sb.Data_Block + starting_block, temp_buffer);
+			block_read(f_index + sb.Data_Block, temp_buffer);
 		int size = strlen((char*)temp_buffer);
 		if(os == 0  && size != 0)
 			rd[f].file_Size = rd[f].file_Size-size;
@@ -340,7 +342,7 @@ int fs_write(int fd, void *buf, size_t count)
 		}
 	
 		if(os >= BLOCK_SIZE){
-			block_write(f_index + sb.Data_Block + starting_block, temp_buffer);
+			block_write(f_index + sb.Data_Block, temp_buffer);
 			uint16_t temp =0;
 			temp = next_fat();
 			Fb.Fat_Block_index[f_index] =temp;
@@ -352,7 +354,7 @@ int fs_write(int fd, void *buf, size_t count)
 			os++;
 			write++;
 		}
-		block_write(f_index + sb.Data_Block + starting_block, temp_buffer);
+		block_write(f_index + sb.Data_Block, temp_buffer);
 		return write;
 
 	}
@@ -376,16 +378,18 @@ int fs_read(int fd, void *buf, size_t count)
 		}
 		int read = 0;
 		void *temp_buffer = (void*)malloc(BLOCK_SIZE);
-		int starting_block = fileD[fd].os / BLOCK_SIZE;  
 
+		//int starting_block = fileD[fd].os / BLOCK_SIZE;  
+		// starting block would be used if we are not reading from the start of the block
+		// have to figure this out later 
 		
 
 
 		int os =  fileD[fd].os % BLOCK_SIZE;
 		if(f_index == sb.Data_Block)
-			block_read(f_index + 0 + starting_block, temp_buffer);
+			block_read(f_index + 0, temp_buffer);
 
-		block_read(f_index + sb.Data_Block + starting_block, temp_buffer);
+		block_read(f_index + sb.Data_Block , temp_buffer);
 		for(int i =0; i < count; i++){
 			if(i == fs_stat(fd))
 				return read;
@@ -395,7 +399,7 @@ int fs_read(int fd, void *buf, size_t count)
 				}
 				else
 					return read;
-				block_read(f_index + sb.Data_Block + starting_block, temp_buffer);
+				block_read(f_index + sb.Data_Block, temp_buffer);
 				os =0;
 			}
 			memcpy(buf + i, temp_buffer+os, 1);
