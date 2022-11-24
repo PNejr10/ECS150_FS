@@ -292,11 +292,40 @@
 	int fs_write(int fd, void *buf, size_t count)
 	{
 		/* TODO: Phase 4 */
-		if(fd)
+		if(mount ==0 || fd >FS_OPEN_MAX_COUNT || fd < 0 || buf == NULL){
+			printf("INVALID");
 			return -1;
-		if(count > 0)
-			return -1;
-		printf("%p\n", buf);
+		}
+
+		// // FAT array is just an array with indexes of data blocks as its values. shows chains of data blocks(i.e one chain= one file)
+		// // initialized empty file. change name of filename in rd to whatever is stated, size = 0 and index = FATEOC
+		// // check and store filename at fd,  store offset = os, int index;
+		// char *filename_arr = (char*)fileD[fd].Filename;
+		// int index;
+		// if (fs_open(filename_arr) == 0){
+		// 	// means that the file is in the fiel system
+		// 	for(int i =0; i< FS_FILE_MAX_COUNT; i++){
+		// 		if(strcmp((char*)rd[i].Filename, filename_arr)==0){
+		// 			index = (int)rd[i].index; //index of first block for file @ fd
+		// 			break;
+		// 		}
+		// }				
+		// printf("%d",index);
+		// // check if rd[index]== eoc:
+		// // 		if count != 0:
+		// //			we need to allocate data block(s)
+		// // else:
+		// // 		if os == 0:
+		// //			
+		// //		else:
+		// //			....
+		// // 
+		// // loop through the array to check how many data blocks we have in the file already
+		// int fatArrSize = sizeof(Fb -> (char*)Fat_Block_index) / sizeof(Fb -> (char*)Fat_Block_index[0]);
+		// for(int i = 1; i<fatArrSize; i++){
+		// 	int fatIndex = Fb -> (char*)Fat_Block_index[i]
+		// 	printf("%d",fatIndex);
+		// }
 		return 0;
 	}
 

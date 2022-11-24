@@ -1,0 +1,12 @@
+#!/bin/sh
+
+# make fresh virtual disk
+MOUNT
+CREATE	file_fs 8192
+OPEN	file_fs
+SEEK	1
+READ
+WRITE   "mama"
+CLOSE
+DELETE	file_fs
+UMOUNT
